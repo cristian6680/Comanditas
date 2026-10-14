@@ -1,0 +1,33 @@
+
+# Antes que nada hay que crea unos archivos ocultos dentro de la carpeta donde se van a poner todos los archivos de la app.
+# Primero creamos un archivo oculto dentro de la carpeta (todo archivo que empieza con . se considera oculto).
+
+bash 
+nano .gitignore   (y dentro del archivo guardamos este script que sigue):
+
+# Entornos virtuales de Python
+venv/
+.venv/
+env/
+
+# Variables de entorno y contraseñas secretas
+.env
+
+# Archivos de caché y compilación de Python
+__pycache__/
+*.pyc
+
+# Registros y logs temporales
+*.log
+
+Una vez creado este archivo se puede ver con:
+
+bash
+ls -la   (ver los archivos ocultos)
+cat .gitignore   (ver el archivo)
+
+
+
+
+
+ 

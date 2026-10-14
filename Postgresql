@@ -1,0 +1,130 @@
+
+DATABASE comanditas_db
+USER comanditas_user     
+PASSWORD LJD231326comanditas
+
+# Creando la base de datos de la aplicación 
+CREATE DATABASE comanditas_db;
+
+# Crear un usuario exclusivo con contraseña
+CREATE USER comanditas_user WITH PASSWORD 'LJD231326comanditas';
+
+# Asignar permisos completos sobre la base de datos
+GRANT ALL PRIVILEGES ON DATABASE comanditas_db TO comanditas_user;
+
+# Salir de psql
+\q
+
+------------------------------------------
+ 
+Probamos la conexión
+psql -h localhost -U comanditas_user -d comanditas_db
+
+Deberia salir el prompt
+comanditas_db==>
+
+Esto indica que salió todo bien y que el programa cliente (psql) abrió un socket de comunicación directo con el proceso servidor de 
+Postgresql que está corriendo en segundo plano en Debian. Cualquier instrucción que se haga afecta a la base de datos comanditas_db
+==>    (usuario standard)   para salir se usa el comando \q
+#      (superusuario)
+
+------------------------------------------
+MODELADO Y CREACIÓN DE TABLAS (DDL) Data Definition Languaje
+
+-- 1. Tabla de Usuarios (Mozos, Administradores, Cocina)
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    rol VARCHAR(20) NOT NULL DEFAULT 'mozo',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Tabla de Categorías del Menú
+CREATE TABLE categorias (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT
+);
+
+-- 3. Tabla de Productos
+CREATE TABLE productos (
+    id SERIAL PRIMARY KEY,
+    categoria_id INT NOT NULL REFERENCES categorias(id) ON DELETE RESTRICT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL CHECK (precio >= 0),
+    disponible BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+# Para entrar em modo superusuario
+sudo -i -u postgres psql -d comanditas_db
+comanditas_db=# ALTER SCHEMA public OWNER TO comanditas_user;    (esto para darle a comanditas_user permisos public)
+
+Creadas la tablas se pueden ver en pantalla usando el metacomando:
+comanditas_db=> \dt
+
+También para ver por tabla:
+comanditas_db=> \d usuarios     (o también)
+comanditas_db=> \d categorias
+comanditas_db=> \d productos
+----------------------------------------------------------------------------
+
+PROBANDO UN SCRIPT SQL EN LAS TABLAS CREADAS
+
+-- 1. Insertar Categorías iniciales
+INSERT INTO categorias (nombre, descripcion) VALUES
+('Pizzas', 'Pizzas artesanales a la piedra'),
+('Empanadas', 'Empanadas tradicionales al horno de barro'),
+('Bebidas', 'Gaseosas, aguas y cervezas bien frías');
+
+-- 2. Insertar Productos asignados a esas categorías
+-- (Asumimos id 1 = Pizzas, id 2 = Empanadas, id 3 = Bebidas)
+INSERT INTO productos (categoria_id, nombre, descripcion, precio, disponible) VALUES
+(1, 'Muzzarella Familiar', 'Salsa de tomate, muzzarella y orégano', 8500.00, TRUE),
+(1, 'Fugazzeta Especial', 'Muzzarella, cebolla y jamón', 9800.00, TRUE),
+(2, 'Empanada Carne Cuchillo', 'Carne cortada a cuchillo, suave', 1200.00, TRUE),
+(2, 'Empanada Jamón y Queso', 'Jamón cocido y muzzarella', 1100.00, TRUE),
+(3, 'Coca-Cola 1.5L', 'Gaseosa botella 1.5 Litros', 3200.00, TRUE);
+
+-- 3. Insertar un Usuario inicial (por ejemplo, el mozo de prueba)
+INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES
+('Carlos Mozo', 'carlos@comanditas.local', 'hash_simulado_12345', 'mozo');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
