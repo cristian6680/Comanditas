@@ -1,14 +1,15 @@
-# Entornos virtuales de Python
+# Entorno virtual
 venv/
-.venv/
 env/
 
-# Variables de entorno y contraseñas secretas
+# Variables de entorno secretas
 .env
 
-# Archivos de caché y compilación de Python
+# Archivos de caché de python
 __pycache__/
 *.pyc
+*.pyo
 
-# Registros y logs temporales
-*.log
+# Archivos de la IDE / Editor
+.vscode/
+.idea/

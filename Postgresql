@@ -94,6 +94,117 @@ INSERT INTO productos (categoria_id, nombre, descripcion, precio, disponible) VA
 INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES
 ('Carlos Mozo', 'carlos@comanditas.local', 'hash_simulado_12345', 'mozo');
 
+# Probar que los datos que cargamos en las tablas funcionan cuando llamamos a la base de datos.
+comanditas_db==>
+SELECT 
+    p.id AS producto_id,
+    p.nombre AS plato,
+    c.nombre AS categoria,
+    p.precio
+FROM productos p
+INNER JOIN categorias c ON p.categoria_id = c.id
+ORDER BY c.nombre, p.nombre;
+
+
+¿Qué logramos desde la Arquitectura de Software?
+
+En ingeniería de software, a esto que acabás de hacer se lo conoce como Infraestructura como Código (IaC / Database Versioning):
+
+    Reprodutibilidad Total: Tu base de datos ya no depende de la memoria de nadie ni de comandos sueltos en un historial de terminal.
+
+    Portabilidad: Mañana te comprás otra máquina, clonás el repositorio y con un par de comandos tenés la base de datos idéntica funcionando en 5 segundos.
+
+    Control de Versiones: Si el día de mañana agregamos una tabla nueva (por ejemplo, mesas o pedidos), simplemente actualizamos schema.sql, hacemos un commit en Git y el equipo completo sabe qué cambió.
+
+Una Analogía Práctica: El Manual de Franquicia
+
+Imaginá que estás armando el manual operativo para abrir sucursales de tu pizzería en Quilmes o en Berazategui:
+
+    schema.sql es el plano del local (dónde van los hornos, el mostrador y las mesas).
+
+    seed.sql es el stock con el que arranca la persiana arriba el primer día de trabajo (harina, salsa, bebidas y el usuario del primer mozo).
+
+Creando el archivo schema.sql:
+
+-- ===================================================
+-- ARCHIVO: db/schema.sql
+-- DESCRIPCIÓN: Estructura inicial del esquema de Comanditas
+-- ===================================================
+
+-- 1. Tabla de Usuarios (Mozos, Administradores, Cocina)
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    rol VARCHAR(20) NOT NULL DEFAULT 'mozo',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Tabla de Categorías del Menú
+CREATE TABLE IF NOT EXISTS categorias (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT
+);
+
+-- 3. Tabla de Productos (Relacionada con Categorías)
+CREATE TABLE IF NOT EXISTS productos (
+    id SERIAL PRIMARY KEY,
+    categoria_id INT NOT NULL REFERENCES categorias(id) ON DELETE RESTRICT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL CHECK (precio >= 0),
+    disponible BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+Creando el archivo seed.sql:
+-- ===================================================
+-- ARCHIVO: db/seed.sql
+-- DESCRIPCIÓN: Datos iniciales de prueba para Comanditas
+-- ===================================================
+
+-- 1. Insertar Categorías principales
+INSERT INTO categorias (nombre, descripcion) VALUES
+('Pizzas a la Piedra', 'Pizzas artesanales al horno de barro'),
+('Empanadas', 'Empanadas tradicionales'),
+('Bebidas', 'Gaseosas, aguas y cervezas bien frías')
+ON CONFLICT (nombre) DO NOTHING;
+
+-- 2. Insertar Productos del menú
+INSERT INTO productos (categoria_id, nombre, descripcion, precio, disponible) VALUES
+(1, 'Muzzarella Familiar', 'Salsa de tomate, muzzarella y orégano', 8500.00, TRUE),
+(1, 'Fugazzeta Especial', 'Muzzarella, cebolla y jamón', 9800.00, TRUE),
+(2, 'Empanada Carne Cuchillo', 'Carne cortada a cuchillo, suave', 1200.00, TRUE),
+(2, 'Empanada Jamón y Queso', 'Jamón cocido y muzzarella', 1100.00, TRUE),
+(3, 'Coca-Cola 1.5L', 'Gaseosa botella 1.5 Litros', 3200.00, TRUE);
+
+-- 3. Insertar Usuario de prueba
+INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES
+('Carlos Mozo', 'carlos@comanditas.local', 'hash_simulado_12345', 'mozo')
+ON CONFLICT (email) DO NOTHING;
+
+
+Con ambos archivos listos, cualquier persona con ese manual puede levantar una sucursal exactamente igual a la original.
+¿Cómo probamos que los archivos funcionan de un solo tiro?
+
+Si querés verificar que los scripts corren limpios desde la terminal de Debian, podés ejecutar este test de prueba:
+Bash
+
+# 1. Probar el archivo de estructura (Schema)
+psql -h localhost -U comanditas_user -d comanditas_db -f db/schema.sql
+
+# 2. Probar el archivo de datos iniciales (Seed)
+psql -h localhost -U comanditas_user -d comanditas_db -f db/seed.sql
+
+Como agregamos las cláusulas IF NOT EXISTS y ON CONFLICT DO NOTHING, PostgreSQL los procesará sin romper nada ni duplicar filas.
+
+
+Para ver la base como quedó:
+bash
+psql -h localhost -U comanditas_user -d comanditas_db
 
 
 
