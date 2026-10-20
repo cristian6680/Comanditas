@@ -1,10 +1,12 @@
 from app.schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse
 from app.schemas.categoria import CategoriaCreate, CategoriaUpdate, CategoriaResponse
 from app.schemas.producto import ProductoCreate, ProductoUpdate, ProductoResponse
+from app.schemas.token import Token, TokenData
 
 __all__ = [
     "UsuarioCreate", "UsuarioUpdate", "UsuarioResponse",
     "CategoriaCreate", "CategoriaUpdate", "CategoriaResponse",
-    "ProductoCreate", "ProductoUpdate", "ProductoResponse"
+    "ProductoCreate", "ProductoUpdate", "ProductoResponse",
+    "Token", "TokenData"
 ]
 
