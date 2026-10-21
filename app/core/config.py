@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings:
-    PROYECT_NAME: str = "Comanditas API"
+    PROJECT_NAME: str = "Comanditas API"
     VERSION: str = "1.0.0"
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
